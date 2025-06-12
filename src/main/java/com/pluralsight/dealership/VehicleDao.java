@@ -4,11 +4,13 @@ package com.pluralsight.dealership;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.sql.DataSource;
+
 
 public class VehicleDao {
-    private final DataSourceManager dataSource;
+    private final DataSource dataSource;
 
-    public VehicleDao(DataSourceManager dataSource) {
+    public VehicleDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -141,22 +143,31 @@ public class VehicleDao {
 
     // New method to remove a vehicle by its VIN
     public void removeVehicleByVin(int vin) {
-        String sql = "DELETE FROM vehicles WHERE vin = ?";
+        String deleteInventorySql = "DELETE FROM Inventory WHERE VIN = ?";
+        String deleteVehicleSql = "DELETE FROM Vehicles WHERE VIN = ?";
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
 
-            stmt.setInt(1, vin);
-            int rowsAffected = stmt.executeUpdate();
+            try (
+                    PreparedStatement stmt1 = conn.prepareStatement(deleteInventorySql);
+                    PreparedStatement stmt2 = conn.prepareStatement(deleteVehicleSql)
+            ) {
+                stmt1.setInt(1, vin);
+                stmt1.executeUpdate();
 
-            if (rowsAffected > 0) {
+                stmt2.setInt(1, vin);
+                stmt2.executeUpdate();
+
+                conn.commit();
                 System.out.println("Vehicle with VIN " + vin + " was removed successfully.");
-            } else {
-                System.out.println("No vehicle found with VIN " + vin + ".");
+            } catch (SQLException e) {
+                conn.rollback();
+                System.err.println("Error during vehicle delete: " + e.getMessage());
             }
-
         } catch (SQLException e) {
-            System.err.println("Error deleting vehicle: " + e.getMessage());
+            System.err.println("Database error: " + e.getMessage());
         }
     }
+
 }

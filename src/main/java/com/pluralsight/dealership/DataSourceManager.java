@@ -12,12 +12,10 @@ public class DataSourceManager {
 
     public DataSourceManager() {
         dataSource = new BasicDataSource();
-        dataSource.setUrl("jdbc:mysql://localhost:3306/cardealershipdatabase");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/CarDealershipDatabase");
         dataSource.setUsername("root");
         dataSource.setPassword("kamyg1717");
-        dataSource.setMinIdle(5);
-        dataSource.setMaxIdle(10);
-        dataSource.setMaxOpenPreparedStatements(100);
+
     }
 
     public DataSource getDataSource() {

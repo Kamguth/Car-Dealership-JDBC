@@ -20,6 +20,9 @@ public class SalesContract extends Contract{
     public boolean isFinance() {
         return finance;
     }
+    public void setFinance(boolean finance) {
+        this.finance = finance;
+    }
 
     public double getSalesTax() {
         return salesTax;

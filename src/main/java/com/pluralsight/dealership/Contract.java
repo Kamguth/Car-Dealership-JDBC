@@ -46,6 +46,11 @@ public abstract class Contract {
         return vehicleSold;
 
     }
+
+    public Vehicle getVehicle() {
+        return vehicleSold;
+    }
+
     public abstract double getTotalPrice();
     public abstract double getMonthlyPayment();
 }

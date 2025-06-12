@@ -26,6 +26,9 @@ public class LeaseContract extends Contract{
         return leaseFee;
     }
 
+
+
+
     @Override
     public double getTotalPrice() {
         return 0;

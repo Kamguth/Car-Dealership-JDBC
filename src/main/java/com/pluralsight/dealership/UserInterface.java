@@ -1,4 +1,3 @@
-
 package com.pluralsight.dealership;
 
 import java.util.List;
@@ -7,9 +6,13 @@ import java.util.Scanner;
 public class UserInterface {
     private static final Scanner scanner = new Scanner(System.in);
     private final VehicleDao vehicleDao;
+    private final SalesDao salesDao;
+    private final LeaseDao leaseDao;
 
-    public UserInterface(VehicleDao vehicleDao) {
+    public UserInterface(VehicleDao vehicleDao, SalesDao salesDao, LeaseDao leaseDao) {
         this.vehicleDao = vehicleDao;
+        this.salesDao = salesDao;
+        this.leaseDao = leaseDao;
     }
 
     public void display() {
@@ -171,6 +174,7 @@ public class UserInterface {
             System.out.println("Invalid input.");
         }
     }
+
     private void removeVehicleProcess() {
         try {
             System.out.print("Enter VIN to remove: ");
@@ -182,40 +186,49 @@ public class UserInterface {
         }
     }
 
-
     private void processSaleOrLease() {
-        System.out.print("Enter VIN of vehicle to sell or lease: ");
-        int vin = Integer.parseInt(scanner.nextLine());
+        try {
+            System.out.print("Enter VIN of vehicle to sell or lease: ");
+            int vin = Integer.parseInt(scanner.nextLine());
 
-        Vehicle vehicle = vehicleDao.getVehicleByVin(vin);
-        if (vehicle == null) {
-            System.out.println("Vehicle not found.");
-            return;
+            Vehicle vehicle = vehicleDao.getVehicleByVin(vin);
+            if (vehicle == null) {
+                System.out.println("Vehicle not found.");
+                return;
+            }
+
+            System.out.print("Enter contract date (YYYYMMDD): ");
+            String date = scanner.nextLine();
+
+            System.out.print("Enter customer name: ");
+            String name = scanner.nextLine();
+
+            System.out.print("Enter customer email: ");
+            String email = scanner.nextLine();
+
+            System.out.print("Is this a SALE or LEASE? ");
+            String type = scanner.nextLine().toUpperCase();
+
+            if ("SALE".equals(type)) {
+                System.out.print("Is it financed? (yes/no): ");
+                boolean finance = scanner.nextLine().equalsIgnoreCase("yes");
+                SalesContract contract = new SalesContract(date, name, email, vehicle);
+                contract.setFinance(finance);
+                salesDao.save(contract);
+                System.out.println("Sales contract saved to database.");
+            } else if ("LEASE".equals(type)) {
+                LeaseContract contract = new LeaseContract(date, name, email, vehicle);
+                leaseDao.save(contract);
+                System.out.println("Lease contract saved to database.");
+            } else {
+                System.out.println("Invalid contract type.");
+                return;
+            }
+
+            vehicleDao.removeVehicleByVin(vin);
+            System.out.println("Vehicle removed from inventory.");
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input.");
         }
-
-        System.out.print("Enter contract date (YYYYMMDD): ");
-        String date = scanner.nextLine();
-
-        System.out.print("Enter customer name: ");
-        String name = scanner.nextLine();
-
-        System.out.print("Enter customer email: ");
-        String email = scanner.nextLine();
-
-        System.out.print("Is this a SALE or LEASE? ");
-        String type = scanner.nextLine().toUpperCase();
-
-        Contract contract;
-        if ("SALE".equals(type)) {
-            System.out.print("Is it financed? (yes/no): ");
-            boolean finance = scanner.nextLine().equalsIgnoreCase("yes");
-            contract = new SalesContract(date, name, email, vehicle);
-        } else {
-            contract = new LeaseContract(date, name, email, vehicle);
-        }
-
-        new ContractFileManager().saveContract(contract);
-        vehicleDao.removeVehicleByVin(vin);
-        System.out.println("Contract saved and vehicle removed.");
     }
 }
