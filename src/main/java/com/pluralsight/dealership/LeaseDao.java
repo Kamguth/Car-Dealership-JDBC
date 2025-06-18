@@ -12,7 +12,7 @@ public class LeaseDao {
     }
 
     public void save(LeaseContract contract) {
-        String sql = "INSERT INTO LeaseContracts (vin, customer_name, customer_email, date, ending_value, lease_fee, monthly_payment) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO LeaseContracts (vin, customer_name, customer_email, lease_date, expected_value, lease_fee, monthly_payment) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -25,7 +25,11 @@ public class LeaseDao {
             stmt.setDouble(6, contract.getLeaseFee());
             stmt.setDouble(7, contract.getMonthlyPayment());
 
-            stmt.executeUpdate();
+            System.out.println(stmt.toString());
+            System.out.println(stmt);
+
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println(rowsAffected + "Rows Affected");
         } catch (SQLException e) {
             System.err.println("Error saving lease contract: " + e.getMessage());
         }
